@@ -56,7 +56,7 @@
         }
     </style>
 </head>
-<body class="h-full bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200">
+<body class="h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-brand-500 selection:text-white transition-colors duration-200">
 
     <!-- App Container -->
     <div id="app" class="flex h-full w-full overflow-hidden">
@@ -202,8 +202,8 @@
                         </div>
 
                         <!-- Sync Feed Button -->
-                        <button onclick="refreshFeed()" class="flex items-center space-x-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-all active:scale-95 shrink-0" title="最新フィードを取得">
-                            <i data-lucide="refresh-cw" id="refreshIcon" class="w-4 h-4"></i>
+                        <button onclick="refreshArticlesFromAPI()" id="syncBtn" class="flex items-center space-x-1.5 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 shrink-0 shadow-sm" title="最新フィードを取得">
+                            <i data-lucide="refresh-cw" id="syncIcon" class="w-4 h-4"></i>
                             <span class="hidden sm:inline">同期</span>
                         </button>
                     </div>
@@ -350,7 +350,7 @@
                     <p id="detailDescription">記事の概要テキストがここに表示されます。</p>
                 </div>
 
-                <!-- Local AI Inference Panel (Tauri / Client Simulation) -->
+                <!-- Local AI Inference Panel -->
                 <div class="bg-gradient-to-br from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/30 dark:to-purple-950/30 p-5 rounded-2xl border border-indigo-200/80 dark:border-indigo-800/50 space-y-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-2">
@@ -426,27 +426,22 @@
                     <h3 class="text-lg font-bold text-slate-900 dark:text-white">TechFeed アカウント認証</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ブックマーク・メモをサーバー(MariaDB)へ同期</p>
                 </div>
-        <!-- Header Controls -->
-        <div class="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur">
-            <div class="relative flex-1 max-w-xl">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="タイトル・概要・キーワードから検索..." 
-                    class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800/80 border border-transparent focus:border-brand-500 rounded-xl text-sm outline-none transition-all text-slate-800 dark:text-slate-100 placeholder-slate-400">
-            </div>
 
-            <div class="flex items-center space-x-3 overflow-x-auto pb-1 md:pb-0">
-                <!-- Date Filter -->
-                <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
-                    <button onclick="setDateFilter('all')" id="date-all" class="date-btn px-3 py-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-slate-800 dark:text-white transition-all">全期間</button>
-                    <button onclick="setDateFilter('24h')" id="date-24h" class="date-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-all">24時間</button>
-                    <button onclick="setDateFilter('7d')" id="date-7d" class="date-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-all">7日間</button>
-                    <button onclick="setDateFilter('30d')" id="date-30d" class="date-btn px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-all">30日</button>
+                <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ユーザーID / メールアドレス</label>
+                        <input type="text" id="authUserId" required placeholder="例: dev_user01" class="w-full px-3.5 py-2 bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-brand-500 rounded-xl text-sm outline-none text-slate-900 dark:text-slate-100">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all">
+                        ログインして同期開始
+                    </button>
+                </form>
+
+                <div id="logoutSection" class="hidden border-t border-slate-200 dark:border-slate-800 pt-4 text-center">
+                    <button onclick="handleLogout()" class="text-xs font-bold text-red-500 hover:text-red-600">
+                        ログアウト (ローカルデータ消去)
+                    </button>
                 </div>
-
-                <button onclick="refreshArticlesFromAPI()" id="syncBtn" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-brand-600 dark:hover:bg-brand-500 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 shadow-sm transition-all active:scale-95">
-                    <i data-lucide="refresh-cw" id="syncIcon" class="w-3.5 h-3.5"></i>
-                    <span>API同期</span>
-                </button>
             </div>
         </div>
 
@@ -534,22 +529,20 @@
 
         // --- APP STATE ---
         let state = {
-            currentRegion: 'jp', // 'jp' | 'global'
-            currentView: 'all', // 'all' | 'bookmarks' | 'unread' | 'analytics'
+            currentRegion: 'jp',
+            currentView: 'all',
             selectedCategory: 'すべて',
-            dateFilter: 'all', // 'all' | '24h' | '7d' | '30d'
+            dateFilter: 'all',
             searchQuery: '',
             
-            // User Data State (Persisted in localStorage)
             user: {
                 isLoggedIn: false,
                 userId: 'ゲストユーザー'
             },
             bookmarks: new Set(),
             readArticles: new Set(),
-            memos: {}, // { articleId: "memo text" }
+            memos: {},
             
-            // Active Selected Article for Detail View
             activeArticleId: null,
             aiSummaryActive: false,
             aiTranslated: false
@@ -561,17 +554,11 @@
         // --- FILTERING LOGIC ---
         function getFilteredArticles() {
             return SAMPLE_ARTICLES.filter(art => {
-                // Region filter
                 if (art.region !== state.currentRegion) return false;
-
-                // Category filter
                 if (state.selectedCategory !== 'すべて' && art.category !== state.selectedCategory) return false;
-
-                // View filter
                 if (state.currentView === 'bookmarks' && !state.bookmarks.has(art.id)) return false;
                 if (state.currentView === 'unread' && state.readArticles.has(art.id)) return false;
 
-                // Date filter
                 if (state.dateFilter !== 'all') {
                     const artDate = new Date(art.date).getTime();
                     const now = Date.now();
@@ -582,7 +569,6 @@
                     if (state.dateFilter === '30d' && hoursDiff > 24 * 30) return false;
                 }
 
-                // Search query
                 if (state.searchQuery) {
                     const q = state.searchQuery.toLowerCase();
                     const titleMatch = art.title.toLowerCase().includes(q);
@@ -657,29 +643,22 @@
             fetchLiveNewsAPI();
         };
 
-        // --- DYNAMIC IMAGE & API FETCHING LOGIC ---
-        
-        // Dynamically fetch live articles from API (GNews API structure simulation via Dev.to / Public Tech RSS)
+        // --- DYNAMIC API FETCHING LOGIC ---
         async function fetchLiveNewsAPI() {
-            const syncBtn = document.getElementById('syncBtn');
             const syncIcon = document.getElementById('syncIcon');
             if (syncIcon) syncIcon.classList.add('animate-spin');
 
             try {
-                // Fetch dynamic tech news feed from DEV.to API matching GNews API response structure
                 const res = await fetch('https://dev.to/api/articles?per_page=6&top=7');
                 if (!res.ok) throw new Error('API fetch failed');
                 const rawData = await res.json();
 
-                // Map API response to required Article Object Schema
                 const apiArticles = rawData.map((item, idx) => {
                     const catMap = ['AI/LLM', 'Frontend', 'Backend', 'Cloud/DevOps', 'Security', 'Mobile'];
                     const category = catMap[idx % catMap.length];
                     const region = idx % 2 === 0 ? 'global' : 'jp';
 
-                    // Fallback keyword-based dynamic high-res tech image from Unsplash/LoremFlickr
-                    const dynamicImage = item.cover_image || item.social_image || 
-                        `https://source.unsplash.com/featured/800x450/?${encodeURIComponent(category + ',technology')}&sig=${item.id}`;
+                    const dynamicImage = item.cover_image || item.social_image || null;
 
                     return {
                         id: `api-${item.id}`,
@@ -694,17 +673,15 @@
                     };
                 });
 
-                // Merge API articles with sample dataset ensuring uniqueness
                 apiArticles.forEach(fetchedArt => {
                     if (!SAMPLE_ARTICLES.some(a => a.id === fetchedArt.id)) {
                         SAMPLE_ARTICLES.unshift(fetchedArt);
                     }
                 });
 
-                showToast('APIから最新ニュースとサムネイル画像を取得しました');
+                showToast('APIから最新ニュースを取得しました');
             } catch (err) {
-                console.warn("API取得代替モード（ローカル画像 & サンプルデータ）:", err);
-                showToast('最新データを読み込みました');
+                console.warn("API取得代替モード（サンプルデータ使用）:", err);
             } finally {
                 if (syncIcon) syncIcon.classList.remove('animate-spin');
                 updateUI();
@@ -715,19 +692,17 @@
             fetchLiveNewsAPI();
         }
 
-        // SVG Dynamic Dynamic Image Placeholder Generator
         function getSVGPlaceholder(category) {
             const encodedCat = encodeURIComponent(category || 'Tech');
             return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300"><rect width="100%" height="100%" fill="%231e293b"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="%236366f1">${encodedCat}</text></svg>`;
         }
 
-        // Toast Notification Helper
         function showToast(msg) {
             const toast = document.createElement('div');
             toast.className = 'fixed bottom-5 right-5 z-50 bg-slate-900 text-white dark:bg-brand-600 text-xs px-4 py-3 rounded-xl shadow-lg border border-slate-700/50 flex items-center space-x-2 transition-all transform translate-y-2 opacity-0';
             toast.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i><span>${msg}</span>`;
             document.body.appendChild(toast);
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
             
             setTimeout(() => {
                 toast.classList.remove('translate-y-2', 'opacity-0');
@@ -739,20 +714,12 @@
             }, 3000);
         }
 
-        // Initialize Live API Fetching on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            // Initial API sync
-            fetchLiveNewsAPI();
-        });
-
         // --- RENDER MAIN UI ---
         function updateUI() {
-            // Update User Info
             document.getElementById('userName').innerText = state.user.userId;
             document.getElementById('userRole').innerText = state.user.isLoggedIn ? 'MariaDB 同期中' : '未ログイン (ローカル保存)';
             document.getElementById('userAvatar').innerText = state.user.userId.charAt(0).toUpperCase();
 
-            // Update Counts in Badges
             const regionArticles = SAMPLE_ARTICLES.filter(a => a.region === state.currentRegion);
             document.getElementById('badge-all-count').innerText = regionArticles.length;
             
@@ -764,12 +731,10 @@
 
             document.getElementById('analyticsBookmarkCount').innerText = state.bookmarks.size;
 
-            // Region Toggle UI
             const isJp = state.currentRegion === 'jp';
             document.getElementById('regionJpBtn').className = `flex-1 py-1.5 rounded-lg flex items-center justify-center space-x-1.5 transition-all ${isJp ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400'}`;
             document.getElementById('regionGlobalBtn').className = `flex-1 py-1.5 rounded-lg flex items-center justify-center space-x-1.5 transition-all ${!isJp ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white font-bold' : 'text-slate-600 dark:text-slate-400'}`;
 
-            // View Filtering Title Update
             const titles = {
                 'all': 'すべての記事',
                 'bookmarks': 'ブックマーク一覧',
@@ -778,7 +743,6 @@
             };
             document.getElementById('viewTitle').innerHTML = `<span>${titles[state.currentView]}</span>`;
 
-            // Toggle Analytics vs Feed view
             const feedView = document.getElementById('feedView');
             const analyticsView = document.getElementById('analyticsView');
             const emptyState = document.getElementById('emptyState');
@@ -806,21 +770,12 @@
 
             renderCategoryNav();
             saveLocalState();
+            if (window.lucide) lucide.createIcons();
         }
 
         // --- ARTICLE CARDS RENDER ---
         function renderArticleCards(articles) {
             const container = document.getElementById('feedView');
-            if (articles.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-16 text-center text-slate-400">
-                        <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 stroke-1 text-slate-300"></i>
-                        <p class="text-sm">該当する記事が見つかりませんでした。</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
 
             container.innerHTML = articles.map(art => {
                 const isBookmarked = state.bookmarks.has(art.id);
@@ -828,16 +783,20 @@
                 const hasMemo = !!state.memos[art.id];
                 const formattedDate = new Date(art.date).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const fallbackImg = getSVGPlaceholder(art.category);
+                const displayImg = art.image || fallbackImg;
+
+                // Title and Description escaped safely
+                const safeTitle = art.title.replace(/"/g, '&quot;');
 
                 return `
                     <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group relative ${isRead ? 'opacity-80' : ''}">
                         
-                        <!-- Article Thumbnail Image with Loading & Fallback -->
+                        <!-- Article Thumbnail Image -->
                         <div onclick="openDetailPanel('${art.id}')" class="w-full h-44 overflow-hidden bg-slate-100 dark:bg-slate-800/80 cursor-pointer relative group">
-                            <img src="${art.image || fallbackImg}" 
+                            <img src="${displayImg}" 
                                  onerror="this.onerror=null; this.src='${fallbackImg}';" 
                                  loading="lazy"
-                                 alt="${art.title}" 
+                                 alt="${safeTitle}" 
                                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out">
                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                             
@@ -864,7 +823,7 @@
                                     ${art.title}
                                 </h3>
 
-                                <!-- Snippet (GNews Metadata Description) -->
+                                <!-- Snippet -->
                                 <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-4">
                                     ${art.description}
                                 </p>
@@ -889,7 +848,6 @@
                     </div>
                 `;
             }).join('');
-            lucide.createIcons();
         }
 
         // --- ACTIONS ---
@@ -905,8 +863,6 @@
 
         function setViewFilter(view) {
             state.currentView = view;
-            
-            // Highlight nav buttons
             ['all', 'bookmarks', 'unread', 'analytics'].forEach(v => {
                 const btn = document.getElementById(`nav-${v}`);
                 if (btn) {
@@ -917,7 +873,6 @@
                     }
                 }
             });
-
             updateUI();
         }
 
@@ -966,22 +921,13 @@
             if (state.activeArticleId === id) updateDetailBookmarkIcon();
         }
 
-        function refreshFeed() {
-            const icon = document.getElementById('refreshIcon');
-            icon.classList.add('animate-spin');
-            setTimeout(() => {
-                icon.classList.remove('animate-spin');
-                updateUI();
-            }, 600);
-        }
-
         // --- DETAIL SLIDE PANEL & AI FEATURES ---
         function openDetailPanel(id) {
             const art = SAMPLE_ARTICLES.find(a => a.id === id);
             if (!art) return;
 
             state.activeArticleId = id;
-            state.readArticles.add(id); // Automatically mark as read
+            state.readArticles.add(id);
 
             document.getElementById('detailTitle').innerText = art.title;
             document.getElementById('detailSource').innerText = art.source;
@@ -991,11 +937,9 @@
             document.getElementById('detailRegionBadge').innerText = art.region.toUpperCase();
             document.getElementById('detailExternalUrl').href = art.url;
 
-            // Load saved memo
             document.getElementById('myMemoArea').value = state.memos[id] || '';
             document.getElementById('memoSavedBadge').classList.add('opacity-0');
 
-            // Reset AI Output
             document.getElementById('aiResultBox').classList.add('hidden');
             state.aiSummaryActive = false;
             state.aiTranslated = false;
@@ -1003,7 +947,6 @@
 
             updateDetailBookmarkIcon();
 
-            // Open Panel
             document.getElementById('detailBackdrop').classList.remove('opacity-0', 'pointer-events-none');
             document.getElementById('detailPanel').classList.remove('translate-x-full');
 
@@ -1020,7 +963,7 @@
             const btn = document.getElementById('detailBookmarkBtn');
             const isBookmarked = state.bookmarks.has(state.activeArticleId);
             btn.innerHTML = `<i data-lucide="star" class="w-5 h-5 ${isBookmarked ? 'text-amber-400 fill-amber-400' : ''}"></i>`;
-            lucide.createIcons();
+            if (window.lucide) lucide.createIcons();
         }
 
         function toggleBookmarkFromDetail() {
@@ -1029,7 +972,6 @@
             }
         }
 
-        // Simulated Local Client AI Summary
         function generateAiSummary() {
             const art = SAMPLE_ARTICLES.find(a => a.id === state.activeArticleId);
             if (!art) return;
@@ -1037,7 +979,6 @@
             const box = document.getElementById('aiResultBox');
             const pointsList = document.getElementById('aiSummaryPoints');
 
-            // Generate contextual bullet points simulation
             pointsList.innerHTML = `
                 <li><strong>要点1:</strong> ${art.category} 分野における最新技術トレンドを反映。</li>
                 <li><strong>要点2:</strong> メモリ効率の向上とネイティブ推論環境への最適化が主軸。</li>
@@ -1048,7 +989,6 @@
             state.aiSummaryActive = true;
         }
 
-        // Simulated Multilingual Toggle
         function toggleAiTranslation() {
             const art = SAMPLE_ARTICLES.find(a => a.id === state.activeArticleId);
             if (!art) return;
@@ -1068,7 +1008,6 @@
             }
         }
 
-        // Auto-save My Memo
         function handleMemoInput() {
             if (!state.activeArticleId) return;
 
@@ -1120,14 +1059,15 @@
             closeAuthModal();
         }
 
-        // --- DARK MODE TOGGLE ---
         function toggleDarkMode() {
             document.documentElement.classList.toggle('dark');
         }
 
         // --- CHART.JS IT TREND ANALYTICS ---
         function initChart() {
-            const ctx = document.getElementById('trendChartCanvas').getContext('2d');
+            const canvas = document.getElementById('trendChartCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             
             trendChartInstance = new Chart(ctx, {
                 type: 'line',
